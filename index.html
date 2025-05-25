@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moneyopolis Stonks</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./all.min.css">
+    <script src="./chart.js.download"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512..<integrity hash here>..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div id="app">
+        <div id="welcome-screen" class="screen">
+            <div class="welcome-container">
+                <h1>Welcome to Moneyopolis Stonks</h1>
+                <h2>Build your city, invest in stocks, and grow your wealth!</h2>
+                <div class="start-money-selection">
+                    <label for="initial-money">Select your starting money (1-1000 AED):</label>
+                    <input type="range" id="initial-money" min="1" max="1000" value="500">
+                    <span id="money-display">500 AED</span>
+                </div>
+                <button id="start-game" class="btn primary">Start Game</button>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen active">
+            <header>
+                <div class="logo">Moneyopolis Stonks</div>
+                <nav>
+                    <button class="tab-btn" data-tab="dashboard">Dashboard</button>
+                    <button class="tab-btn" data-tab="city">City Builder</button>
+                    <button class="tab-btn active" data-tab="stocks">Stock Market</button>
+                    <button class="tab-btn" data-tab="portfolio">Portfolio</button>
+                    <button class="tab-btn" data-tab="challenges">Math Challenges</button>
+                </nav>
+                <div class="stats">
+                    <div class="stat"><i class="fas fa-coins"></i> <span id="money">382</span> AED</div>
+                    <div class="stat"><i class="fas fa-graduation-cap"></i> Education: <span id="education">50</span>%</div>
+                    <div class="stat"><i class="fas fa-calendar-day"></i> Day: <span id="day">12</span></div>
+                </div>
+            </header>
+
+            <main>
+                <section id="dashboard-tab" class="tab-content">
+                    <div class="dashboard-container">
+                        <div class="dashboard-card">
+                            <h3>City Overview</h3>
+                            <div class="city-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-building"></i>
+                                    <div class="stat-details">
+                                        <h4>Buildings</h4>
+                                        <p id="buildings-count">0</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-coins"></i>
+                                    <div class="stat-details">
+                                        <h4>Daily Income</h4>
+                                        <p id="daily-income">0 AED</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <div class="stat-details">
+                                        <h4>Education Level</h4>
+                                        <p id="education-level">50%</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="collect-income" class="btn primary">Collect Daily Income</button>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>Stock Portfolio Overview</h3>
+                            <div id="portfolio-summary">
+                                <p>Total Investment: <span id="total-investment">0.00 AED</span></p>
+                                <p>Current Value: <span id="current-value">0.00 AED</span></p>
+                                <p>Profit/Loss: <span id="profit-loss" class="positive">0.00 AED (+0.00%)</span></p>
+                            </div>
+                            <div id="portfolio-chart-container">
+                                <canvas id="portfolio-chart" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <h3>Quick Actions</h3>
+                            <div class="quick-actions">
+                                <button id="add-money" class="btn secondary"><i class="fas fa-plus"></i> Add Money</button>
+                                <button id="next-day" class="btn secondary"><i class="fas fa-forward"></i> Next Day</button>
+                                <button id="start-challenge" class="btn secondary"><i class="fas fa-brain"></i> Start Math Challenge</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="city-tab" class="tab-content">
+                    <div class="city-container">
+                        <div class="city-sidebar">
+                            <h3>Buildings</h3>
+                            <div class="building-list">
+                                <div class="building-item" data-building="house">
+                                    <img src="./images/house.png" alt="House">
+                                    <div class="building-info">
+                                        <h4>House</h4>
+                                        <p>Cost: 120 AED</p>
+                                        <p>Income: 0 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="shop">
+                                    <img src="./images/shop.png" alt="Shop">
+                                    <div class="building-info">
+                                        <h4>Shop</h4>
+                                        <p>Cost: 200 AED</p>
+                                        <p>Income: 15 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="office">
+                                    <img src="./images/officecenter.png" alt="Office">
+                                    <div class="building-info">
+                                        <h4>Office</h4>
+                                        <p>Cost: 400 AED</p>
+                                        <p>Income: 35 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="school">
+                                    <img src="./images/school.png" alt="School">
+                                    <div class="building-info">
+                                        <h4>School</h4>
+                                        <p>Cost: 300 AED</p>
+                                        <p>Income: 20 AED/day</p>
+                                        <p>Education: +5%</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="bank">
+                                    <img src="./images/bank.png" alt="Bank">
+                                    <div class="building-info">
+                                        <h4>Bank</h4>
+                                        <p>Cost: 4100 AED</p>
+                                        <p>Income: 300 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="park">
+                                    <img src="./images/playground.png" alt="Park">
+                                    <div class="building-info">
+                                        <h4>Park</h4>
+                                        <p>Cost: 150 AED</p>
+                                        <p>Income: 10 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="hospital">
+                                    <img src="./images/hospital.png" alt="Hospital">
+                                    <div class="building-info">
+                                        <h4>Hospital</h4>
+                                        <p>Cost: 2250 AED</p>
+                                        <p>Income: 140 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="monument">
+                                    <img src="./images/monument.png" alt="Monument">
+                                    <div class="building-info">
+                                        <h4>Monument</h4>
+                                        <p>Cost: 800 AED</p>
+                                        <p>Income: 85 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="mosque">
+                                    <img src="./images/mosque.png" alt="Mosque">
+                                    <div class="building-info">
+                                        <h4>Mosque</h4>
+                                        <p>Cost: 950 AED</p>
+                                        <p>Income: 50 AED/day</p>
+                                        <p>Education: +4%</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="skyscraper">
+                                    <img src="./images/skyscraper.png" alt="Skyscraper">
+                                    <div class="building-info">
+                                        <h4>Skyscraper</h4>
+                                        <p>Cost: 5000 AED</p>
+                                        <p>Income: 250 AED/day</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="stadium">
+                                    <img src="./images/stadium.png" alt="Stadium">
+                                    <div class="building-info">
+                                        <h4>Stadium</h4>
+                                        <p>Cost: 1750 AED</p>
+                                        <p>Income: 100 AED/day</p>
+                                        <p>Education: +3%</p>
+                                    </div>
+                                </div>
+                                <div class="building-item" data-building="mall">
+                                    <img src="./images/shoppingmall.png" alt="Mall">
+                                    <div class="building-info">
+                                        <h4>Mall</h4>
+                                        <p>Cost: 3000 AED</p>
+                                        <p>Income: 120 AED/day</p>
+                                        <p>Education: +1%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="city-grid-container">
+                            <div id="city-grid"><div class="grid-cell" data-index="0"></div><div class="grid-cell" data-index="1"></div><div class="grid-cell" data-index="2"></div><div class="grid-cell" data-index="3"></div><div class="grid-cell" data-index="4"></div><div class="grid-cell" data-index="5"></div><div class="grid-cell" data-index="6"></div><div class="grid-cell" data-index="7"></div><div class="grid-cell" data-index="8"></div><div class="grid-cell" data-index="9"></div><div class="grid-cell" data-index="10"></div><div class="grid-cell" data-index="11"></div><div class="grid-cell" data-index="12"></div><div class="grid-cell" data-index="13"></div><div class="grid-cell" data-index="14"></div><div class="grid-cell" data-index="15"></div><div class="grid-cell" data-index="16"></div><div class="grid-cell" data-index="17"></div><div class="grid-cell" data-index="18"></div><div class="grid-cell" data-index="19"></div><div class="grid-cell" data-index="20"></div><div class="grid-cell" data-index="21"></div><div class="grid-cell" data-index="22"></div><div class="grid-cell" data-index="23"></div><div class="grid-cell" data-index="24"></div><div class="grid-cell" data-index="25"></div><div class="grid-cell" data-index="26"></div><div class="grid-cell" data-index="27"></div><div class="grid-cell" data-index="28"></div><div class="grid-cell" data-index="29"></div><div class="grid-cell" data-index="30"></div><div class="grid-cell" data-index="31"></div><div class="grid-cell" data-index="32"></div><div class="grid-cell" data-index="33"></div><div class="grid-cell" data-index="34"></div><div class="grid-cell" data-index="35"></div><div class="grid-cell" data-index="36"></div><div class="grid-cell" data-index="37"></div><div class="grid-cell" data-index="38"></div><div class="grid-cell" data-index="39"></div><div class="grid-cell" data-index="40"></div><div class="grid-cell" data-index="41"></div><div class="grid-cell" data-index="42"></div><div class="grid-cell" data-index="43"></div><div class="grid-cell" data-index="44"></div><div class="grid-cell" data-index="45"></div><div class="grid-cell" data-index="46"></div><div class="grid-cell" data-index="47"></div><div class="grid-cell" data-index="48"></div><div class="grid-cell" data-index="49"></div><div class="grid-cell" data-index="50"></div><div class="grid-cell" data-index="51"></div><div class="grid-cell" data-index="52"></div><div class="grid-cell" data-index="53"></div><div class="grid-cell" data-index="54"></div><div class="grid-cell" data-index="55"></div><div class="grid-cell" data-index="56"></div><div class="grid-cell" data-index="57"></div><div class="grid-cell" data-index="58"></div><div class="grid-cell" data-index="59"></div><div class="grid-cell" data-index="60"></div><div class="grid-cell" data-index="61"></div><div class="grid-cell" data-index="62"></div><div class="grid-cell" data-index="63"></div><div class="grid-cell" data-index="64"></div><div class="grid-cell" data-index="65"></div><div class="grid-cell" data-index="66"></div><div class="grid-cell" data-index="67"></div><div class="grid-cell" data-index="68"></div><div class="grid-cell" data-index="69"></div><div class="grid-cell" data-index="70"></div><div class="grid-cell" data-index="71"></div><div class="grid-cell" data-index="72"></div><div class="grid-cell" data-index="73"></div><div class="grid-cell" data-index="74"></div><div class="grid-cell" data-index="75"></div><div class="grid-cell" data-index="76"></div><div class="grid-cell" data-index="77"></div><div class="grid-cell" data-index="78"></div><div class="grid-cell" data-index="79"></div><div class="grid-cell" data-index="80"></div><div class="grid-cell" data-index="81"></div><div class="grid-cell" data-index="82"></div><div class="grid-cell" data-index="83"></div><div class="grid-cell" data-index="84"></div><div class="grid-cell" data-index="85"></div><div class="grid-cell" data-index="86"></div><div class="grid-cell" data-index="87"></div><div class="grid-cell" data-index="88"></div><div class="grid-cell" data-index="89"></div><div class="grid-cell" data-index="90"></div><div class="grid-cell" data-index="91"></div><div class="grid-cell" data-index="92"></div><div class="grid-cell" data-index="93"></div><div class="grid-cell" data-index="94"></div><div class="grid-cell" data-index="95"></div><div class="grid-cell" data-index="96"></div><div class="grid-cell" data-index="97"></div><div class="grid-cell" data-index="98"></div><div class="grid-cell" data-index="99"></div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="stocks-tab" class="tab-content active">
+                    <div class="stocks-container">
+                        <div class="stocks-header">
+                            <h2>Stock Market</h2>
+                            <p>Current Day: <span id="stock-day">12</span></p>
+                        </div>
+                        <div class="stock-market">
+                            <table class="stock-table">
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Symbol</th>
+                                        <th>Price</th>
+                                        <th>Change</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stock-list"><tr>
+            <td>AeroTech</td>
+            <td>ATH</td>
+            <td>46.64 AED</td>
+            <td class="negative">-2.50%</td>
+            <td><canvas class="stock-chart" id="mini-chart-1" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="1">View</button>
+            </td>
+        </tr><tr>
+            <td>Global Energy</td>
+            <td>GEL</td>
+            <td>81.73 AED</td>
+            <td class="negative">-0.24%</td>
+            <td><canvas class="stock-chart" id="mini-chart-2" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="2">View</button>
+            </td>
+        </tr><tr>
+            <td>Future Tech</td>
+            <td>FTH</td>
+            <td>121.57 AED</td>
+            <td class="positive">+0.94%</td>
+            <td><canvas class="stock-chart" id="mini-chart-3" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="3">View</button>
+            </td>
+        </tr><tr>
+            <td>Desert Banks</td>
+            <td>DBK</td>
+            <td>74.66 AED</td>
+            <td class="negative">-0.90%</td>
+            <td><canvas class="stock-chart" id="mini-chart-4" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="4">View</button>
+            </td>
+        </tr><tr>
+            <td>Oasis Water</td>
+            <td>OWC</td>
+            <td>32.94 AED</td>
+            <td class="positive">+1.65%</td>
+            <td><canvas class="stock-chart" id="mini-chart-5" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="5">View</button>
+            </td>
+        </tr><tr>
+            <td>Media Vision</td>
+            <td>MVN</td>
+            <td>62.07 AED</td>
+            <td class="positive">+2.05%</td>
+            <td><canvas class="stock-chart" id="mini-chart-6" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="6">View</button>
+            </td>
+        </tr><tr>
+            <td>Healthcare Plus</td>
+            <td>HCP</td>
+            <td>98.16 AED</td>
+            <td class="positive">+0.88%</td>
+            <td><canvas class="stock-chart" id="mini-chart-7" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="7">View</button>
+            </td>
+        </tr><tr>
+            <td>Smart Retail</td>
+            <td>SRL</td>
+            <td>38.58 AED</td>
+            <td class="negative">-3.68%</td>
+            <td><canvas class="stock-chart" id="mini-chart-8" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="8">View</button>
+            </td>
+        </tr><tr>
+            <td>Dubai Properties</td>
+            <td>DPR</td>
+            <td>110.98 AED</td>
+            <td class="negative">-0.70%</td>
+            <td><canvas class="stock-chart" id="mini-chart-9" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="9">View</button>
+            </td>
+        </tr><tr>
+            <td>Tech Innovate</td>
+            <td>TIN</td>
+            <td>70.37 AED</td>
+            <td class="positive">+1.00%</td>
+            <td><canvas class="stock-chart" id="mini-chart-10" width="156" height="64" style="display: block; box-sizing: border-box; height: 51px; width: 125px;"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="10">View</button>
+            </td>
+        </tr></tbody>
+                            </table>
+                        </div>
+                        <div class="stock-details-container">
+                            <div id="stock-details">
+                                <h3>Stock Details</h3>
+                                <div id="selected-stock-info">
+                                    <p>Select a stock to view details</p>
+                                </div>
+                                <div id="stock-chart-container">
+                                    <canvas id="stock-chart"></canvas>
+                                </div>
+                                <div class="stock-trade-panel">
+                                    <div class="trade-form">
+                                        <label for="trade-amount">Amount:</label>
+                                        <input type="number" id="trade-amount" min="1" value="1">
+                                        <div class="trade-buttons">
+                                            <button id="buy-stock" class="btn primary">Buy</button>
+                                            <button id="sell-stock" class="btn secondary">Sell</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="portfolio-tab" class="tab-content">
+                    <div class="portfolio-container">
+                        <div class="portfolio-header">
+                            <h2>Your Portfolio</h2>
+                            <div class="portfolio-summary">
+                                <div class="summary-item">
+                                    <h4>Total Investment</h4>
+                                    <p id="portfolio-investment">0.00 AED</p>
+                                </div>
+                                <div class="summary-item">
+                                    <h4>Current Value</h4>
+                                    <p id="portfolio-value">0.00 AED</p>
+                                </div>
+                                <div class="summary-item">
+                                    <h4>Profit/Loss</h4>
+                                    <p id="portfolio-pl" class="positive">0.00 AED (+0.00%)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="portfolio-holdings">
+                            <h3>Your Holdings</h3>
+                            <table class="portfolio-table">
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Symbol</th>
+                                        <th>Shares</th>
+                                        <th>Avg. Buy Price</th>
+                                        <th>Current Price</th>
+                                        <th>Value</th>
+                                        <th>Profit/Loss</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portfolio-list">
+            <tr>
+                <td colspan="8" class="text-center">You don't own any stocks yet.</td>
+            </tr>
+        </tbody>
+                            </table>
+                        </div>
+                        <div class="portfolio-performance">
+                            <h3>Portfolio Performance</h3>
+                            <div id="portfolio-performance-chart-container">
+                                <canvas id="portfolio-performance-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="challenges-tab" class="tab-content">
+                    <div class="challenges-container">
+                        <div class="challenge-intro">
+                            <h2>Math Challenges</h2>
+                            <p>Complete math challenges to boost your city's education level!</p>
+                            <p>Current Education Level: <span id="challenge-education">50</span>%</p>
+                            <button id="start-math-challenge" class="btn primary">Start Challenge</button>
+                        </div>
+                        <div id="challenge-area" class="hidden">
+                            <div class="challenge-header">
+                                <h3>Solve the Problem</h3>
+                                <div class="timer">
+                                    Time Left: <span id="challenge-timer">60</span>s
+                                </div>
+                            </div>
+                            <div id="challenge-question">
+                                <!-- Challenge question will be displayed here -->
+                            </div>
+                            <div id="challenge-options">
+                                <!-- Challenge options will be displayed here -->
+                            </div>
+                            <button id="submit-answer" class="btn primary">Submit Answer</button>
+                        </div>
+                        <div id="challenge-result" class="hidden">
+                            <h3>Challenge Result</h3>
+                            <p id="result-message"></p>
+                            <p>Education Change: <span id="education-change"></span></p>
+                            <button id="next-challenge" class="btn primary">Next Challenge</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        
+        <!-- Modals -->
+        <div id="add-money-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">×</span>
+                <h3>Add Money</h3>
+                <div class="form-group">
+                    <label for="add-amount">Amount to add (AED):</label>
+                    <input type="number" id="add-amount" min="1" value="100">
+                </div>
+                <button id="confirm-add-money" class="btn primary">Add Money</button>
+            </div>
+        </div>
+        
+        <div id="stock-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">×</span>
+                <h3 id="stock-modal-title">Buy Stock</h3>
+                <div id="stock-modal-info"></div>
+                <div class="form-group">
+                    <label for="stock-amount">Number of shares:</label>
+                    <input type="number" id="stock-amount" min="1" value="1">
+                    <p>Total Cost: <span id="stock-total-cost">0</span> AED</p>
+                </div>
+                <button id="confirm-stock-action" class="btn primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./game.js.download"></script>
+
+    </body></html>
