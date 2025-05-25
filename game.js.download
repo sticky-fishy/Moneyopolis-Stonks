@@ -1,0 +1,1191 @@
+// Game Configuration
+const gameConfig = {
+    initialMoney: 500,
+    dayIncomeCollected: false,
+    currentDay: 1,
+    education: 50,
+    buildings: [],
+    stocks: [
+        { id: 1, name: 'AeroTech', symbol: 'ATH', price: 45.25, history: [], change: 0 },
+        { id: 2, name: 'Global Energy', symbol: 'GEL', price: 78.93, history: [], change: 0 },
+        { id: 3, name: 'Future Tech', symbol: 'FTH', price: 120.50, history: [], change: 0 },
+        { id: 4, name: 'Desert Banks', symbol: 'DBK', price: 67.30, history: [], change: 0 },
+        { id: 5, name: 'Oasis Water', symbol: 'OWC', price: 32.15, history: [], change: 0 },
+        { id: 6, name: 'Media Vision', symbol: 'MVN', price: 56.40, history: [], change: 0 },
+        { id: 7, name: 'Healthcare Plus', symbol: 'HCP', price: 92.75, history: [], change: 0 },
+        { id: 8, name: 'Smart Retail', symbol: 'SRL', price: 41.60, history: [], change: 0 },
+        { id: 9, name: 'Dubai Properties', symbol: 'DPR', price: 103.85, history: [], change: 0 },
+        { id: 10, name: 'Tech Innovate', symbol: 'TIN', price: 67.20, history: [], change: 0 }
+    ],
+    portfolio: [],
+    portfolioHistory: [{ day: 1, value: 0 }],
+    buildingTypes: [
+        { type: 'house', cost: 120, income: 0, education: 0, img: './images/house.png' },
+        { type: 'shop', cost: 200, income: 15, education: 0, img: './images/shop.png' },
+        { type: 'office', cost: 400, income: 35, education: 0, img: './images/officecenter.png' },
+        { type: 'school', cost: 300, income: 20, education: 5, img: './images/school.png' },
+        { type: 'bank', cost: 4100, income: 300, education: 0, img: './images/bank.png' },
+        { type: 'park', cost: 150, income: 10, education: 2, img: './images/playground.png' },
+        { type: 'hospital', cost: 2250, income: 140, education: 3, img: './images/hospital.png' },
+        { type: 'monument', cost: 800, income: 85, education: 1, img: './images/monument.png' },
+        { type: 'mosque', cost: 950, income: 50, education: 4, img: './images/mosque.png' },
+        { type: 'skyscraper', cost: 5000, income: 250, education: 0, img: './images/skyscraper.png' },
+        { type: 'stadium', cost: 1750, income: 100, education: 3, img: './images/stadium.png' },
+        { type: 'mall', cost: 3000, income: 120, education: 1, img: './images/shoppingmall.png' }
+    ],
+    gridSize: 10,
+    autoAdvanceDay: true,
+    autoAdvanceInterval: 3000 // 10 seconds for testing
+};
+
+// Game state
+let gameState = {
+    money: gameConfig.initialMoney,
+    day: gameConfig.currentDay,
+    education: gameConfig.education,
+    buildings: [],
+    stocks: JSON.parse(JSON.stringify(gameConfig.stocks)),
+    portfolio: [],
+    portfolioHistory: [...gameConfig.portfolioHistory],
+    selectedBuilding: null,
+    selectedStock: null,
+    dayIncomeCollected: false,
+    challengeActive: false,
+    challengeTimer: 60,
+    autoAdvanceTimerId: null
+};
+
+// DOM Elements
+const welcomeScreen = document.getElementById('welcome-screen');
+const gameScreen = document.getElementById('game-screen');
+const initialMoneyInput = document.getElementById('initial-money');
+const moneyDisplay = document.getElementById('money-display');
+const startGameBtn = document.getElementById('start-game');
+const moneyElement = document.getElementById('money');
+const educationElement = document.getElementById('education');
+const dayElement = document.getElementById('day');
+const stockDayElement = document.getElementById('stock-day');
+const buildingsCountElement = document.getElementById('buildings-count');
+const dailyIncomeElement = document.getElementById('daily-income');
+const educationLevelElement = document.getElementById('education-level');
+const cityGrid = document.getElementById('city-grid');
+const stockListElement = document.getElementById('stock-list');
+const selectedStockInfoElement = document.getElementById('selected-stock-info');
+const portfolioListElement = document.getElementById('portfolio-list');
+const totalInvestmentElement = document.getElementById('total-investment');
+const currentValueElement = document.getElementById('current-value');
+const profitLossElement = document.getElementById('profit-loss');
+const portfolioInvestmentElement = document.getElementById('portfolio-investment');
+const portfolioValueElement = document.getElementById('portfolio-value');
+const portfolioPLElement = document.getElementById('portfolio-pl');
+const challengeEducationElement = document.getElementById('challenge-education');
+const tabs = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+const addMoneyBtn = document.getElementById('add-money');
+const nextDayBtn = document.getElementById('next-day');
+const collectIncomeBtn = document.getElementById('collect-income');
+const startMathChallengeBtn = document.getElementById('start-math-challenge');
+const challengeStartBtn = document.getElementById('start-challenge');
+const challengeArea = document.getElementById('challenge-area');
+const challengeResult = document.getElementById('challenge-result');
+const challengeQuestion = document.getElementById('challenge-question');
+const challengeOptions = document.getElementById('challenge-options');
+const challengeTimer = document.getElementById('challenge-timer');
+const submitAnswerBtn = document.getElementById('submit-answer');
+const nextChallengeBtn = document.getElementById('next-challenge');
+const resultMessage = document.getElementById('result-message');
+const educationChange = document.getElementById('education-change');
+const addMoneyModal = document.getElementById('add-money-modal');
+const stockModal = document.getElementById('stock-modal');
+const closeButtons = document.querySelectorAll('.close');
+const confirmAddMoneyBtn = document.getElementById('confirm-add-money');
+const addAmountInput = document.getElementById('add-amount');
+const stockModalTitle = document.getElementById('stock-modal-title');
+const stockModalInfo = document.getElementById('stock-modal-info');
+const stockAmount = document.getElementById('stock-amount');
+const stockTotalCost = document.getElementById('stock-total-cost');
+const confirmStockAction = document.getElementById('confirm-stock-action');
+const buyStockBtn = document.getElementById('buy-stock');
+const sellStockBtn = document.getElementById('sell-stock');
+const tradeAmount = document.getElementById('trade-amount');
+
+// Chart objects
+let stockChart = null;
+let portfolioChart = null;
+let portfolioPerformanceChart = null;
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', init);
+initialMoneyInput.addEventListener('input', updateMoneyDisplay);
+startGameBtn.addEventListener('click', startGame);
+tabs.forEach(tab => tab.addEventListener('click', switchTab));
+addMoneyBtn.addEventListener('click', showAddMoneyModal);
+nextDayBtn.addEventListener('click', advanceDay);
+collectIncomeBtn.addEventListener('click', collectDailyIncome);
+startMathChallengeBtn.addEventListener('click', startMathChallenge);
+challengeStartBtn.addEventListener('click', startMathChallenge);
+submitAnswerBtn.addEventListener('click', submitAnswer);
+nextChallengeBtn.addEventListener('click', resetChallenge);
+closeButtons.forEach(btn => btn.addEventListener('click', closeModals));
+confirmAddMoneyBtn.addEventListener('click', addMoney);
+buyStockBtn.addEventListener('click', () => showStockModal('buy'));
+sellStockBtn.addEventListener('click', () => showStockModal('sell'));
+confirmStockAction.addEventListener('click', processStockTransaction);
+stockAmount.addEventListener('input', updateStockTotal);
+tradeAmount.addEventListener('input', updateTradeAmount);
+
+// Add event listener for building item click
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.building-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const buildingType = item.dataset.building;
+            selectBuilding(buildingType);
+        });
+    });
+});
+
+// Initialization
+function init() {
+    welcomeScreen.classList.add('active');
+    gameScreen.classList.remove('active');
+    updateMoneyDisplay();
+    initChartsJS();
+    
+    // Auto advance is handled in startGame function
+}
+
+// Update money display on welcome screen
+function updateMoneyDisplay() {
+    const amount = initialMoneyInput.value;
+    moneyDisplay.textContent = `${amount} AED`;
+    gameState.money = parseInt(amount);
+}
+
+// Start game
+function startGame() {
+    welcomeScreen.classList.remove('active');
+    gameScreen.classList.add('active');
+    
+    // Initialize game with selected money
+    gameState.money = parseInt(initialMoneyInput.value);
+    updateGameDisplay();
+    createCityGrid();
+    generateStockHistory();
+    updateStockMarket();
+    drawPortfolioChart();
+    
+    // Start auto day advance
+    if (gameConfig.autoAdvanceDay) {
+        setAutoAdvanceTimer();
+    }
+}
+
+// Update all game displays
+function updateGameDisplay() {
+    moneyElement.textContent = gameState.money;
+    educationElement.textContent = gameState.education;
+    dayElement.textContent = gameState.day;
+    stockDayElement.textContent = gameState.day;
+    challengeEducationElement.textContent = gameState.education;
+    
+    const totalBuildings = gameState.buildings.length;
+    buildingsCountElement.textContent = totalBuildings;
+    
+    const dailyIncome = calculateDailyIncome();
+    dailyIncomeElement.textContent = `${dailyIncome} AED`;
+    educationLevelElement.textContent = `${gameState.education}%`;
+    
+    // Update portfolio summary
+    updatePortfolioSummary();
+}
+
+// Calculate total daily income from buildings
+function calculateDailyIncome() {
+    return gameState.buildings.reduce((total, building) => {
+        const buildingType = gameConfig.buildingTypes.find(b => b.type === building.type);
+        return total + buildingType.income;
+    }, 0);
+}
+
+// Create the city grid
+function createCityGrid() {
+    cityGrid.innerHTML = '';
+    for (let i = 0; i < gameConfig.gridSize * gameConfig.gridSize; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('grid-cell');
+        cell.dataset.index = i;
+        cell.addEventListener('click', () => placeBuilding(i));
+        cityGrid.appendChild(cell);
+    }
+}
+
+// This is handled in the DOMContentLoaded event listener
+
+// Select a building for placement
+function selectBuilding(buildingType) {
+    const buildingInfo = gameConfig.buildingTypes.find(b => b.type === buildingType);
+    if (gameState.money < buildingInfo.cost) {
+        alert(`Not enough money to buy ${buildingType}. Cost: ${buildingInfo.cost} AED`);
+        return;
+    }
+    
+    gameState.selectedBuilding = buildingType;
+    document.querySelectorAll('.building-item').forEach(item => {
+        item.classList.remove('selected');
+        if (item.dataset.building === buildingType) {
+            item.classList.add('selected');
+        }
+    });
+}
+
+// Place a building on the grid
+function placeBuilding(index) {
+    if (!gameState.selectedBuilding) {
+        alert('Please select a building first');
+        return;
+    }
+    
+    // Check if cell is already occupied
+    const cell = document.querySelector(`.grid-cell[data-index="${index}"]`);
+    if (!cell) {
+        console.error("Cell not found for index:", index);
+        return;
+    }
+    
+    if (cell.hasChildNodes()) {
+        alert('This cell is already occupied');
+        return;
+    }
+    
+    const buildingInfo = gameConfig.buildingTypes.find(b => b.type === gameState.selectedBuilding);
+    
+    // Check if enough money
+    if (gameState.money < buildingInfo.cost) {
+        alert(`Not enough money to buy ${gameState.selectedBuilding}. Cost: ${buildingInfo.cost} AED`);
+        return;
+    }
+    
+    // Deduct money
+    gameState.money -= buildingInfo.cost;
+    
+    // Add building to state
+    gameState.buildings.push({
+        type: gameState.selectedBuilding,
+        position: index
+    });
+    
+    // Increase education if applicable
+    gameState.education += buildingInfo.education;
+    if (gameState.education > 100) gameState.education = 100;
+    
+    // Add building to grid
+    const img = document.createElement('img');
+    img.src = `./images/${gameState.selectedBuilding}.png`;
+    img.alt = gameState.selectedBuilding;
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "contain";
+    cell.appendChild(img);
+    
+    // Update display
+    updateGameDisplay();
+}
+
+// Tab switching functionality
+function switchTab(e) {
+    const tabId = e.target.dataset.tab;
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    tabContents.forEach(content => content.classList.remove('active'));
+    
+    e.target.classList.add('active');
+    document.getElementById(`${tabId}-tab`).classList.add('active');
+    
+    // Update specific tab content if needed
+    if (tabId === 'stocks') {
+        updateStockMarket();
+    } else if (tabId === 'portfolio') {
+        updatePortfolioDisplay();
+    }
+}
+
+// Stock market functions
+function generateStockHistory() {
+    // Generate random history for each stock
+    gameState.stocks.forEach(stock => {
+        stock.history = [];
+        let currentPrice = stock.price;
+    });
+}
+
+// Update stock prices
+function updateStockPrices() {
+    gameState.stocks.forEach(stock => {
+        const lastPrice = stock.price;
+        const volatility = Math.random() * 5 + 1; // Different volatility for different stocks
+        const change = (Math.random() - 0.45) * volatility; // Slightly biased towards positive
+        
+        stock.price = Math.max(1, stock.price + change);
+        stock.change = ((stock.price - lastPrice) / lastPrice) * 100;
+        stock.history.push(stock.price);
+        
+        // Keep history at a reasonable length
+        if (stock.history.length > 100) {
+            stock.history.shift();
+        }
+    });
+}
+
+// Update stock market display
+function updateStockMarket() {
+    stockListElement.innerHTML = '';
+    
+    gameState.stocks.forEach(stock => {
+        const row = document.createElement('tr');
+        
+        const changeClass = stock.change >= 0 ? 'positive' : 'negative';
+        const changeSymbol = stock.change >= 0 ? '+' : '';
+        
+        row.innerHTML = `
+            <td>${stock.name}</td>
+            <td>${stock.symbol}</td>
+            <td>${stock.price.toFixed(2)} AED</td>
+            <td class="${changeClass}">${changeSymbol}${stock.change.toFixed(2)}%</td>
+            <td><canvas class="stock-chart" id="mini-chart-${stock.id}" width="80" height="30"></canvas></td>
+            <td>
+                <button class="btn secondary view-stock" data-stock-id="${stock.id}">View</button>
+            </td>
+        `;
+        
+        stockListElement.appendChild(row);
+    });
+    
+    // Add event listeners to view buttons
+    document.querySelectorAll('.view-stock').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const stockId = parseInt(btn.dataset.stockId);
+            selectStock(stockId);
+        });
+    });
+}
+
+// Create mini stock chart
+function createMiniChart(stock) {
+    const ctx = document.getElementById(`mini-chart-${stock.id}`).getContext('2d');
+    
+    // Take last 10 points for mini chart
+    const data = stock.history.slice(-10);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array(data.length).fill(''),
+            datasets: [{
+                data: data,
+                borderColor: stock.change >= 0 ? 'var(--positive-color)' : 'var(--negative-color)',
+                borderWidth: 2,
+                fill: true,
+                backgroundColor: stock.change >= 0 ? 'rgba(46, 204, 113, 0.1)' : 'rgba(231, 76, 60, 0.1)',
+                pointRadius: 0,
+                lineTension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    display: false
+                }],
+                yAxes: [{
+                    display: false
+                }]
+            },
+            tooltips: {
+                enabled: false
+            }
+        }
+    });
+}
+
+// Select a stock for detailed view
+function selectStock(stockId) {
+    gameState.selectedStock = gameState.stocks.find(s => s.id === stockId);
+    
+    selectedStockInfoElement.innerHTML = `
+        <h4>${gameState.selectedStock.name} (${gameState.selectedStock.symbol})</h4>
+        <p>Current Price: ${gameState.selectedStock.price.toFixed(2)} AED</p>
+        <p class="${gameState.selectedStock.change >= 0 ? 'positive' : 'negative'}">
+            Change: ${gameState.selectedStock.change >= 0 ? '+' : ''}${gameState.selectedStock.change.toFixed(2)}%
+        </p>
+    `;
+    
+    // Update buy/sell buttons based on portfolio
+    const portfolioItem = gameState.portfolio.find(item => item.stockId === stockId);
+    if (portfolioItem) {
+        sellStockBtn.disabled = false;
+        document.getElementById('selected-stock-info').innerHTML += `
+            <p>You own: ${portfolioItem.shares} shares</p>
+            <p>Average buy price: ${portfolioItem.avgPrice.toFixed(2)} AED</p>
+        `;
+    } else {
+        sellStockBtn.disabled = true;
+    }
+    
+    // Update chart
+    updateStockChart();
+}
+
+// Update stock chart
+function updateStockChart() {
+    if (!gameState.selectedStock) return;
+    
+    // Destroy existing chart if it exists
+    if (stockChart) {
+        stockChart.destroy();
+    }
+    
+    const ctx = document.getElementById('stock-chart').getContext('2d');
+    const stock = gameState.selectedStock;
+    
+    // Create labels for the chart (days) - reversed to show correct progression
+    const labels = Array.from({ length: stock.history.length }, (_, i) => 
+        `Day ${gameState.day - stock.history.length + i + 1}`
+    );
+    
+    // Create data in correct order (older to newer)
+    stockChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `${stock.name} (${stock.symbol})`,
+                data: stock.history,
+                borderColor: 'var(--primary-color)',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                xAxes: [{
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 10
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(2) + ' AED';
+                        }
+                    }
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return tooltipItem.yLabel.toFixed(2) + ' AED';
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Portfolio management
+function updatePortfolioDisplay() {
+    portfolioListElement.innerHTML = '';
+    
+    if (gameState.portfolio.length === 0) {
+        portfolioListElement.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center">You don't own any stocks yet.</td>
+            </tr>
+        `;
+        return;
+    }
+    
+    gameState.portfolio.forEach(item => {
+        const stock = gameState.stocks.find(s => s.id === item.stockId);
+        const currentValue = item.shares * stock.price;
+        const invested = item.shares * item.avgPrice;
+        const profitLoss = currentValue - invested;
+        const profitLossPercent = (profitLoss / invested) * 100;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stock.name}</td>
+            <td>${stock.symbol}</td>
+            <td>${item.shares}</td>
+            <td>${item.avgPrice.toFixed(2)} AED</td>
+            <td>${stock.price.toFixed(2)} AED</td>
+            <td>${currentValue.toFixed(2)} AED</td>
+            <td class="${profitLoss >= 0 ? 'positive' : 'negative'}">
+                ${profitLoss.toFixed(2)} AED (${profitLoss >= 0 ? '+' : ''}${profitLossPercent.toFixed(2)}%)
+            </td>
+            <td>
+                <button class="btn secondary portfolio-buy" data-stock-id="${stock.id}">Buy</button>
+                <button class="btn secondary portfolio-sell" data-stock-id="${stock.id}">Sell</button>
+            </td>
+        `;
+        
+        portfolioListElement.appendChild(row);
+    });
+    
+    // Add event listeners
+    document.querySelectorAll('.portfolio-buy').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const stockId = parseInt(btn.dataset.stockId);
+            gameState.selectedStock = gameState.stocks.find(s => s.id === stockId);
+            showStockModal('buy');
+        });
+    });
+    
+    document.querySelectorAll('.portfolio-sell').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const stockId = parseInt(btn.dataset.stockId);
+            gameState.selectedStock = gameState.stocks.find(s => s.id === stockId);
+            showStockModal('sell');
+        });
+    });
+    
+    updatePortfolioSummary();
+    updatePortfolioPerformanceChart();
+}
+
+// Update portfolio summary
+function updatePortfolioSummary() {
+    let totalInvestment = 0;
+    let currentValue = 0;
+    
+    gameState.portfolio.forEach(item => {
+        const stock = gameState.stocks.find(s => s.id === item.stockId);
+        totalInvestment += item.shares * item.avgPrice;
+        currentValue += item.shares * stock.price;
+    });
+    
+    const profitLoss = currentValue - totalInvestment;
+    const profitLossPercent = totalInvestment === 0 ? 0 : (profitLoss / totalInvestment) * 100;
+    
+    // Update dashboard summary
+    totalInvestmentElement.textContent = `${totalInvestment.toFixed(2)} AED`;
+    currentValueElement.textContent = `${currentValue.toFixed(2)} AED`;
+    profitLossElement.textContent = `${profitLoss.toFixed(2)} AED (${profitLoss >= 0 ? '+' : ''}${profitLossPercent.toFixed(2)}%)`;
+    profitLossElement.className = profitLoss >= 0 ? 'positive' : 'negative';
+    
+    // Update portfolio page summary
+    portfolioInvestmentElement.textContent = `${totalInvestment.toFixed(2)} AED`;
+    portfolioValueElement.textContent = `${currentValue.toFixed(2)} AED`;
+    portfolioPLElement.textContent = `${profitLoss.toFixed(2)} AED (${profitLoss >= 0 ? '+' : ''}${profitLossPercent.toFixed(2)}%)`;
+    portfolioPLElement.className = profitLoss >= 0 ? 'positive' : 'negative';
+    
+    // Update portfolio history
+    const portfolioTotal = currentValue;
+    gameState.portfolioHistory.push({ day: gameState.day, value: portfolioTotal });
+    
+    // Update dashboard chart
+    drawPortfolioChart();
+}
+
+// Stock transaction functions
+function showStockModal(action) {
+    if (!gameState.selectedStock) {
+        alert('Please select a stock first');
+        return;
+    }
+    
+    stockModal.style.display = 'block';
+    stockModalTitle.textContent = action === 'buy' ? 'Buy Stock' : 'Sell Stock';
+    
+    const stock = gameState.selectedStock;
+    stockModalInfo.innerHTML = `
+        <p><strong>${stock.name} (${stock.symbol})</strong></p>
+        <p>Current Price: ${stock.price.toFixed(2)} AED</p>
+    `;
+    
+    // For sell, check and limit to owned shares
+    if (action === 'sell') {
+        const portfolioItem = gameState.portfolio.find(item => item.stockId === stock.id);
+        if (!portfolioItem || portfolioItem.shares === 0) {
+            alert('You don\'t own any shares of this stock');
+            stockModal.style.display = 'none';
+            return;
+        }
+        
+        stockModalInfo.innerHTML += `<p>You own: ${portfolioItem.shares} shares</p>`;
+        stockAmount.max = portfolioItem.shares;
+        stockAmount.value = Math.min(1, portfolioItem.shares);
+    } else {
+        stockAmount.max = Math.floor(gameState.money / stock.price);
+        stockAmount.value = 1;
+    }
+    
+    updateStockTotal();
+    
+    confirmStockAction.dataset.action = action;
+}
+
+// Update stock total in modal
+function updateStockTotal() {
+    if (!gameState.selectedStock) return;
+    
+    const amount = parseInt(stockAmount.value);
+    const price = gameState.selectedStock.price;
+    const total = amount * price;
+    
+    stockTotalCost.textContent = `${total.toFixed(2)} AED`;
+}
+
+// Update trade amount on stock details page
+function updateTradeAmount() {
+    if (!gameState.selectedStock) return;
+    
+    const amount = parseInt(tradeAmount.value);
+    if (amount < 1) {
+        tradeAmount.value = 1;
+    }
+}
+
+// Process stock transaction
+function processStockTransaction() {
+    const action = confirmStockAction.dataset.action;
+    const stock = gameState.selectedStock;
+    const amount = parseInt(stockAmount.value);
+    
+    if (action === 'buy') {
+        // Buy stock
+        const cost = amount * stock.price;
+        
+        if (gameState.money < cost) {
+            alert('Not enough money to complete this purchase');
+            return;
+        }
+        
+        // Update portfolio
+        const portfolioItem = gameState.portfolio.find(item => item.stockId === stock.id);
+        if (portfolioItem) {
+            // Calculate new average price
+            const totalShares = portfolioItem.shares + amount;
+            const totalCost = (portfolioItem.shares * portfolioItem.avgPrice) + cost;
+            portfolioItem.avgPrice = totalCost / totalShares;
+            portfolioItem.shares = totalShares;
+        } else {
+            gameState.portfolio.push({
+                stockId: stock.id,
+                shares: amount,
+                avgPrice: stock.price
+            });
+        }
+        
+        // Deduct money
+        gameState.money -= cost;
+    } else {
+        // Sell stock
+        const portfolioItem = gameState.portfolio.find(item => item.stockId === stock.id);
+        
+        if (!portfolioItem || portfolioItem.shares < amount) {
+            alert('You don\'t own enough shares to sell');
+            return;
+        }
+        
+        // Calculate revenue
+        const revenue = amount * stock.price;
+        
+        // Update portfolio
+        portfolioItem.shares -= amount;
+        
+        // Remove from portfolio if no shares left
+        if (portfolioItem.shares === 0) {
+            gameState.portfolio = gameState.portfolio.filter(item => item.stockId !== stock.id);
+        }
+        
+        // Add money
+        gameState.money += revenue;
+    }
+    
+    // Close modal
+    stockModal.style.display = 'none';
+    
+    // Update displays
+    updateGameDisplay();
+    updatePortfolioDisplay();
+    
+    // Update selected stock display if we're on the stocks tab
+    if (document.querySelector('.tab-btn[data-tab="stocks"]').classList.contains('active')) {
+        selectStock(stock.id);
+    }
+}
+
+// Game progression is now handled by the modified advanceDay function below
+
+// Collect daily income
+function collectDailyIncome() {
+    if (gameState.dayIncomeCollected) {
+        alert('You have already collected your income for today!');
+        return;
+    }
+    
+    const income = calculateDailyIncome();
+    gameState.money += income;
+    gameState.dayIncomeCollected = true;
+    
+    updateGameDisplay();
+    alert(`Collected ${income} AED in daily income!`);
+}
+
+// Add money (for testing/simulation)
+function addMoney() {
+    const amount = parseInt(addAmountInput.value);
+    
+    if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    gameState.money += amount;
+    updateGameDisplay();
+    
+    // Close modal
+    addMoneyModal.style.display = 'none';
+}
+
+// Show add money modal
+function showAddMoneyModal() {
+    addMoneyModal.style.display = 'block';
+    addAmountInput.value = 100;
+}
+
+// Close all modals
+function closeModals() {
+    addMoneyModal.style.display = 'none';
+    stockModal.style.display = 'none';
+}
+
+// Math challenge functions
+function startMathChallenge() {
+    // Reset challenge area
+    document.querySelector('.challenge-intro').classList.add('hidden');
+    challengeArea.classList.remove('hidden');
+    challengeResult.classList.add('hidden');
+    
+    // Set up challenge
+    gameState.challengeActive = true;
+    gameState.challengeTimer = 60;
+    
+    // Generate math problem
+    generateMathProblem();
+    
+    // Start timer
+    const timerInterval = setInterval(() => {
+        gameState.challengeTimer--;
+        challengeTimer.textContent = gameState.challengeTimer;
+        
+        if (gameState.challengeTimer <= 0) {
+            clearInterval(timerInterval);
+            endChallenge(false);
+        }
+    }, 1000);
+    
+    // Store interval ID to clear on submit
+    gameState.challengeInterval = timerInterval;
+}
+
+// Generate math problem based on education level
+function generateMathProblem() {
+    let problem, answer, options;
+    const difficulty = Math.min(Math.floor(gameState.education / 10), 10);
+    
+    switch (difficulty) {
+        case 0:
+        case 1:
+            // Simple addition
+            const a = Math.floor(Math.random() * 10) + 1;
+            const b = Math.floor(Math.random() * 10) + 1;
+            problem = `${a} + ${b} = ?`;
+            answer = a + b;
+            break;
+        case 2:
+        case 3:
+            // Simple multiplication
+            const c = Math.floor(Math.random() * 10) + 1;
+            const d = Math.floor(Math.random() * 10) + 1;
+            problem = `${c} × ${d} = ?`;
+            answer = c * d;
+            break;
+        case 4:
+        case 5:
+            // Division with remainder
+            const e = Math.floor(Math.random() * 50) + 10;
+            const f = Math.floor(Math.random() * 9) + 2;
+            const fullResult = Math.floor(e / f);
+            problem = `${e} ÷ ${f} = ? (integer part only)`;
+            answer = fullResult;
+            break;
+        case 6:
+        case 7:
+            // Basic algebra
+            const x = Math.floor(Math.random() * 10) + 1;
+            const result = x * 2 + 3;
+            problem = `If 2x + 3 = ${result}, what is x?`;
+            answer = x;
+            break;
+        case 8:
+        case 9:
+            // Percentages
+            const value = Math.floor(Math.random() * 100) + 50;
+            const percent = Math.floor(Math.random() * 9) + 2;
+            problem = `${percent}% of ${value} = ?`;
+            answer = Math.round((percent / 100) * value);
+            break;
+        default:
+            // Probability
+            const diceCount = Math.floor(Math.random() * 2) + 2; // Only 2 or 3 dice
+            problem = `What is the probability of rolling a sum of 7 with ${diceCount} dice?`;
+            
+            if (diceCount === 2) {
+                answer = "1/6"; // 6 ways out of 36 possibilities
+            } else {
+                answer = "15/216"; // 15 ways out of 216 possibilities
+            }
+            break;
+    }
+    
+    // Generate options
+    if (typeof answer === 'number') {
+        options = [answer];
+        
+        // Generate 3 wrong options
+        while (options.length < 4) {
+            let wrongAnswer;
+            if (difficulty < 8) {
+                // For simpler problems, wrong answers are close to correct answer
+                wrongAnswer = answer + Math.floor(Math.random() * 10) - 5;
+                // Ensure wrong answer is different and not negative
+                if (wrongAnswer !== answer && wrongAnswer >= 0 && !options.includes(wrongAnswer)) {
+                    options.push(wrongAnswer);
+                }
+            } else {
+                // For harder problems, wrong answers are more varied
+                wrongAnswer = Math.floor(Math.random() * (answer * 2)) + 1;
+                if (wrongAnswer !== answer && !options.includes(wrongAnswer)) {
+                    options.push(wrongAnswer);
+                }
+            }
+        }
+    } else {
+        // For probability questions
+        if (diceCount === 1) {
+            options = ["Impossible", "1/6", "1/3", "1/2"];
+        } else if (diceCount === 2) {
+            options = ["1/6", "1/12", "1/3", "1/4"];
+        } else {
+            options = ["15/216", "1/36", "1/18", "1/6"];
+        }
+    }
+    
+    // Shuffle options
+    options.sort(() => Math.random() - 0.5);
+    
+    // Display problem and options
+    challengeQuestion.textContent = problem;
+    challengeOptions.innerHTML = '';
+    
+    options.forEach((option, index) => {
+        const optionElement = document.createElement('div');
+        optionElement.classList.add('option');
+        optionElement.textContent = option;
+        optionElement.dataset.value = option;
+        optionElement.addEventListener('click', selectOption);
+        challengeOptions.appendChild(optionElement);
+    });
+    
+    // Store correct answer
+    gameState.correctAnswer = answer;
+}
+
+// Handle option selection
+function selectOption(e) {
+    document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+    e.target.classList.add('selected');
+    gameState.selectedAnswer = e.target.dataset.value;
+}
+
+// Submit answer
+function submitAnswer() {
+    if (!gameState.selectedAnswer) {
+        alert('Please select an answer');
+        return;
+    }
+    
+    // Clear timer
+    clearInterval(gameState.challengeInterval);
+    
+    // Check if answer is correct
+    let correct = false;
+    
+    if (typeof gameState.correctAnswer === 'number') {
+        correct = parseInt(gameState.selectedAnswer) === gameState.correctAnswer;
+    } else {
+        correct = gameState.selectedAnswer === gameState.correctAnswer;
+    }
+    
+    // End challenge
+    endChallenge(correct);
+}
+
+// End challenge
+function endChallenge(success) {
+    challengeArea.classList.add('hidden');
+    challengeResult.classList.remove('hidden');
+    
+    // Calculate education change
+    let educationChange = 0;
+    
+    if (success) {
+        educationChange = Math.floor(Math.random() * 5) + 3; // Gain 3-7%
+        resultMessage.textContent = 'Great job! You answered correctly!';
+        resultMessage.className = 'positive';
+    } else {
+        educationChange = -(Math.floor(Math.random() * 5) + 1); // Lose 1-5%
+        resultMessage.textContent = 'Oops! That\'s not correct.';
+        resultMessage.className = 'negative';
+    }
+    
+    // Update education
+    gameState.education = Math.max(0, Math.min(100, gameState.education + educationChange));
+    
+    // Display change
+    educationChange.textContent = (educationChange > 0 ? '+' : '') + educationChange + '%';
+    educationChange.className = educationChange > 0 ? 'positive' : 'negative';
+    
+    // Update game display
+    updateGameDisplay();
+}
+
+// Reset challenge
+function resetChallenge() {
+    challengeResult.classList.add('hidden');
+    document.querySelector('.challenge-intro').classList.remove('hidden');
+    gameState.challengeActive = false;
+    gameState.selectedAnswer = null;
+}
+
+// Charts
+function initChartsJS() {
+    Chart.defaults.global.defaultFontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+    Chart.defaults.global.defaultFontColor = '#666';
+}
+
+// Draw portfolio chart on dashboard
+function drawPortfolioChart() {
+    // Destroy existing chart if it exists
+    if (portfolioChart) {
+        portfolioChart.destroy();
+    }
+    
+    const ctx = document.getElementById('portfolio-chart').getContext('2d');
+    
+    // Filter out initial zero value if we have actual data
+    const chartData = gameState.portfolioHistory.length > 2 && gameState.portfolioHistory[1].value > 0 
+        ? gameState.portfolioHistory.slice(1) 
+        : gameState.portfolioHistory;
+    
+    portfolioChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.map(item => `Day ${item.day}`),
+            datasets: [{
+                label: 'Portfolio Value',
+                data: chartData.map(item => item.value),
+                borderColor: '#2e86de',
+                backgroundColor: 'rgba(46, 134, 222, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 5
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(0) + ' AED';
+                        },
+                        beginAtZero: true
+                    }
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return tooltipItem.yLabel.toFixed(2) + ' AED';
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Update portfolio performance chart
+function updatePortfolioPerformanceChart() {
+    // Destroy existing chart if it exists
+    if (portfolioPerformanceChart) {
+        portfolioPerformanceChart.destroy();
+    }
+    
+    const ctx = document.getElementById('portfolio-performance-chart').getContext('2d');
+    
+    // Get data for chart
+    const labels = [];
+    const values = [];
+    
+    // Filter out initial zero value if we have actual data
+    const chartData = gameState.portfolioHistory.length > 2 && gameState.portfolioHistory[1].value > 0 
+        ? gameState.portfolioHistory.slice(1) 
+        : gameState.portfolioHistory;
+    
+    chartData.forEach(item => {
+        labels.push(`Day ${item.day}`);
+        values.push(item.value);
+    });
+    
+    portfolioPerformanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value',
+                data: values,
+                borderColor: '#2e86de',
+                backgroundColor: 'rgba(46, 134, 222, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                xAxes: [{
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 10
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(0) + ' AED';
+                        },
+                        beginAtZero: true
+                    }
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem) {
+                        return tooltipItem.yLabel.toFixed(2) + ' AED';
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Auto advance day function
+function setAutoAdvanceTimer() {
+    // Clear any existing timer
+    if (gameState.autoAdvanceTimerId) {
+        clearInterval(gameState.autoAdvanceTimerId);
+    }
+    
+    // Set new timer
+    gameState.autoAdvanceTimerId = setInterval(() => {
+        console.log("Auto advancing day...");
+        advanceDay(true); // Pass true to skip confirmation
+    }, gameConfig.autoAdvanceInterval);
+    
+    console.log("Auto day advancement timer set with interval:", gameConfig.autoAdvanceInterval);
+}
+
+// Modified advance day function
+function advanceDay(skipConfirmation = false) {
+    if (!gameState.dayIncomeCollected && !skipConfirmation) {
+        if (!confirm('You haven\'t collected your daily income yet. Do you want to advance to the next day anyway?')) {
+            return;
+        }
+    }
+    
+    // Increase day counter
+    gameState.day++;
+    
+    // Reset income collection flag
+    gameState.dayIncomeCollected = false;
+    
+    // Update stock prices
+    updateStockPrices();
+    
+    // Update game display
+    updateGameDisplay();
+    updateStockMarket();
+    
+    // If a stock is selected, update its chart
+    if (gameState.selectedStock) {
+        updateStockChart();
+    }
+    
+    // Update portfolio
+    updatePortfolioDisplay();
+    
+    // Auto collect income if enabled
+    if (skipConfirmation) {
+        const income = calculateDailyIncome();
+        gameState.money += income;
+        gameState.dayIncomeCollected = true;
+        updateGameDisplay();
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target === addMoneyModal) {
+        addMoneyModal.style.display = 'none';
+    }
+    if (event.target === stockModal) {
+        stockModal.style.display = 'none';
+    }
+
+    setInterval(() => {
+  const moneyDisplay = document.getElementById("money");
+  moneyDisplay.textContent = parseFloat(moneyDisplay.textContent).toFixed(2);
+}, 100); // checks every 0.1 sec
+
+};
